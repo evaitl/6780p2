@@ -73,6 +73,7 @@ off threads on temporary data sockets. The terminate socket is just
 written to and we will assume that the buffer doesn't fill up enough
 to block. So:
 
+<pre>
    ClientMain implements Runnable   
       Keeps list of backgrounded get/put tasks.  List is
       searched/updated in synchronized methods.
@@ -103,7 +104,7 @@ to block. So:
    class ListData extends DataXfer
    	 run()
 	 close()
-
+</pre>
 
 The DataXfer classes call ClientMain.transferComplete() when their
 transfers are done.
