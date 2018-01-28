@@ -79,34 +79,26 @@ to block. So:
       searched/updated in synchronized methods.
       Owns user interface socket.
       commandResponse(int id, int code, String resp)      
-      void transferComplete(int id);
+      synchronized void transferComplete(int id);
+      synchronized void transferStart(DataXfer bg);
+      synchronized boolean currentXfer(int id);
       
-      
-   ClientCommandHandler implements Runnable, Closeable
+   CommandHandler implements Runnable, Closeable
        Owns commandSocket
        synchronized println();
-       close()
-       run()
 
    interface  DataXfer implements Closeable, Runnable
         int  getId()
-	run()
-	close()
 
-   class RetrData extends DataXfer
-      run()
-      close()
+   class RetrData implements DataXfer
 
-   class StorData extends DataXfer
-      run()
-      close()
+   class StorData implements DataXfer
 
-   class ListData extends DataXfer
-   	 run()
-	 close()
+   class ListData implements DataXfer
+
 </pre>
 
-The DataXfer classes call ClientMain.transferComplete() when their
+The DataXfer classes call `ClientMain::transferComplete()` when their
 transfers are done.
 
 If a get/put/list is done without the '&', ClientMain sends the
@@ -114,7 +106,7 @@ command, creates the DataXfer class, and calls `DataXfer.run()`
 directly. If a get/put is done with the '&', ClientMain uses
 `Thread.start()` to kick off the DataXfer `run()` method.
 
-On a terminate command, ClientMain() checks the outstanding command
+On a terminate command, ClientMain checks the outstanding command
 list. If found sends the teminate message. If this was a get, then
 `java.io.file.Files.deleteIfExists()` the target file.  If commandId
 not in outstanding command list, just tell the user.
@@ -150,19 +142,18 @@ is. The classes:
     CommandHandler implements Runnable
        Owns commandSocket.
        Keeps synchronized list of backgrounded Xfers for this client.
-       void terminateXfer(int id) - terminate
-       void xferComplete(int id) 
+       synchronized void terminateXfer(int id);
+       synchronized void xferComplete(int id);
+       synchronized void addBg(DataXfer bg);
 
-    interface DataXfer implements Runnable, Closeable
+    interface DataXfer extends Runnable, Closeable
        int getId()
-       void close()
-       void run()
 
-    ListXfer extends DataXfer
+    ListXfer implements DataXfer
 
-    RetrXfer extends DataXfer
+    RetrXfer implements DataXfer
 
-    StorXfer extends DataXfer
+    StorXfer implements DataXfer
     
 The Xfer classes call CommandHandler::xferComplete() when done.
 
