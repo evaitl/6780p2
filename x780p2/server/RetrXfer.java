@@ -3,6 +3,7 @@ package x780p2.server;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.OutputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import x780p2.DataXfer;
@@ -27,12 +28,8 @@ class RetrHandler extends  DataXfer {
 		is.close();
 		is=null;
 	    }
-	    if(ServerSocket!=null){
-		ServerSocket.close();
-		ServerSocket=null;
-	    }
 	}catch(IOException e){
-	    throw new UncheckedIOException(e);
+	    // Ignore close errors
 	}
     }
 }

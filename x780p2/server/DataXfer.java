@@ -3,6 +3,7 @@ import java.io.Closeable;
 import java.net.Socket;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.ServerSocket;
 
 public abstract class DataXfer implements Runnable, Closeable{
     private int id;
@@ -10,7 +11,8 @@ public abstract class DataXfer implements Runnable, Closeable{
     protected Socket dataSocket;
     protected CommandHandler ch;
     protected boolean terminated=false;
-    protected DataXfer(int id, ServerSocket pasvListener){
+    protected DataXfer(CommandHandler ch, int id, ServerSocket pasvListener){
+	this.ch=ch;
 	this.id=id;
 	this.pasvListener=pasvListener;
     }

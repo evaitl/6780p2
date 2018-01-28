@@ -3,18 +3,21 @@ package x780p2.server;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.OutputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
+import java.nio.file.Files;
 
 class StorXfer extends  DataXfer {
     private ServerSocket pasvListener;
     private OutputStream os;
     private Path path;
-    RetrHandler(CommandHandler ch,
-		ServerSocket pasvListener,
-		int id,
-		OutputStream os,
-		Path path){
+    StorXfer(CommandHandler ch,
+	     ServerSocket pasvListener,
+	     int id,
+	     OutputStream os,
+	     Path path){
 	super(ch,id,pasvListener); 
 	this.os=os;
 	this.path=path;
@@ -22,7 +25,7 @@ class StorXfer extends  DataXfer {
     public void run(){
 	try{
 	    accept();
-	    InputStream is;
+	    InputStream is=null;
 	    byte [] buffer= new byte[1000];
 	    int len;
 	    if(!terminated){
@@ -37,10 +40,14 @@ class StorXfer extends  DataXfer {
 	}	
 	close();
 	if(terminated){
-	    os.println(getId()+" 455 STOR terminated");
-	    Files.deleteIfExists(path);
+	    ch.println(getId()+" 455 STOR terminated");
+	    try{
+		Files.deleteIfExists(path);
+	    }catch(IOException e){
+		throw new UncheckedIOException(e);
+	    }
 	}else{
-	    os.println(getId()+" 250 STOR completed");
+	    ch.println(getId()+" 250 STOR completed");
 	}
     }
     public void close(){
