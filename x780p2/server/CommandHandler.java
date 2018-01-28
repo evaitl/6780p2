@@ -12,7 +12,8 @@ class CommandHandler implements Runnable {
     synchronized void addBg(DataXfer bg){
 	
     }
-    
+    synchronized void println(String s){
+    }
     CommandHandler(Socket commandSocket){
 	this.commandSocket=commandSocket;
 	backgroundList=new LinkedList<>();
