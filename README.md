@@ -1,3 +1,12 @@
+Introduction
+============
+
+The code here is a solution to CSCI 6780
+[Programming Project 2](./docs/Programming-Project2.pdf). While this file
+is human readable, it is best to view it as a processed markdown file on the
+github site [here](https://github.com/evaitl/6780p2).
+
+
 Design Notes
 ============
 

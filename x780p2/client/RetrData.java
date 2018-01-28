@@ -3,23 +3,10 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-class RetrData implements DataXfer {
-    private int id;
-    private Socket dataSocket;
+class RetrData extends DataXfer {
     RetrData(int id, Socket dataSocket){
-	this.id=id;
-	this.dataSocket=dataSocket;
-    }
-    public int getId(){
-	return id;
+	super(id,dataSocket);
     }
     public void run(){
-    }
-    public void close(){
-	try{
-	    dataSocket.close();
-	}catch(IOException e){
-	    throw new UncheckedIOException(e);
-	}	
     }
 };

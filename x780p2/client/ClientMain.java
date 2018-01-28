@@ -2,6 +2,7 @@ package x780p2.client;
 
 import java.net.Socket;
 import java.util.LinkedList;
+
 public class ClientMain implements Runnable{
     private Socket termSocket;
     private LinkedList<Integer> backgroundList;
