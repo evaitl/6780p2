@@ -2,32 +2,171 @@ package x780p2.client;
 
 import java.net.Socket;
 import java.util.LinkedList;
+import java.util.List;
+import java.net.UnknownHostException;
+import java.util.Iterator;
+import java.net.InetAddress;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Scanner;
 
 public class ClientMain implements Runnable{
-    private Socket termSocket;
-    private LinkedList<Integer> backgroundList;
-    ClientMain(){
+    private PrintStream termPs;
+    private CommandHandler ch;
+
+    ClientMain(Socket termSocket, Socket commandSocket) throws IOException {
+	termPs=new PrintStream(termSocket.getOutputStream());
+	ch=new CommandHandler(commandSocket);
     }
-    /**
-       Places a DataXfer on the backgroundList;
+
+    synchronized void println(Response r){
+	println(r.toString());
+    }
+    synchronized void println(String s){
+	System.out.println(s);
+    }
+    synchronized void print(String s){
+	System.out.print(s);
+    }
+
+    private Socket createSocket(String s) throws UnknownHostException,IOException {
+	String []split=s.split(",");
+	return new Socket(split[0],Integer.parseInt(split[1]));
+    }
+    private void doGet(String file, boolean bg){
+	int commandId=CommandId.next();
+	ch.println(commandId + " RETR "+ file);
+	Response r=Responses.get(commandId);
+	if(r.result()!=Response.INFO){
+	    println(r);
+	    return;
+	}
+	Socket s=null;
+	try {
+	    s=createSocket(r.getArgs());
+	}catch(Exception e){
+	    println(e.toString());
+	    System.exit(1);
+	}
+	RetrData rd=new RetrData(commandId,s);
+	if(bg){
+	    Xfers.add(rd);
+	    (new Thread(rd)).start();
+	}else{
+	    rd.run();
+	}
+    }
+    
+    private void doList(){
+    }
+    
+    private void doPut(String file, boolean bg){
+    }
+    
+    /*
      */
-    synchronized void transferStart(DataXfer bg){
+    private void handleCommand(String command) throws FtpException {
+	command=command.trim();
+	boolean backgrounded=false;
+	if(command.endsWith("&")){
+	    backgrounded=true;
+	    command=command.substring(0,command.length()-1);
+	}
+	String [] split=command.split("\\s+");
+	int commandId;
+	Response response;
+	if(split.length<1){
+	    return;
+	}
+	switch(split[0].toLowerCase()){
+	case "cd":
+	    if(split.length<2){
+		println("CD where?");
+	    }else{
+		commandId=CommandId.next();
+		if(split[1]==".."){
+		    ch.println(commandId+" CDUP");
+		}else{
+		    ch.println(commandId+" CWD "+split[1]);
+		}
+		println(Responses.get(commandId));
+	    }
+	    break;
+	case "delete":
+	    if(split.length <2){
+		println("Delete what?");
+	    }else{
+		commandId=CommandId.next();
+		ch.println(commandId + " DELE " + split[1]);
+		println(Responses.get(commandId));
+	    }
+	    break;
+	case "get":
+	    if(split.length<2){
+		println("Get what?");
+	    }else{
+		doGet(split[1],backgrounded);
+	    }
+	    break;
+	case "ls":
+	    doList();
+	    break;
+	case "mkdir":
+	    if(split.length <2){
+		println("Delete what?");
+	    }else{
+		commandId=CommandId.next();
+		ch.println(commandId + " MKD " + split[1]);
+		println(Responses.get(commandId));
+	    }	    
+	    break;
+	case "put":
+	    if(split.length<2){
+		println("Get what?");
+	    }else{
+		doPut(split[1],backgrounded);
+	    }	    
+	    break;
+	case "pwd":
+	    commandId=CommandId.next();
+	    ch.println(commandId+ " PWD");
+	    println(Responses.get(commandId));
+	    break;
+	case "quit":
+	    // Nothing says to wait for transfers in progress to complete.
+	    System.exit(0);
+	case "terminate":
+	    
+	break;
+	default:
+	    println("Unknown command: "+split[0]);
+	}
     }
-    /**
-       Remove a DataXfer from the backgroundList;
-     */
-    synchronized void transferComplete(int id){
-    }
-    /**
-       @return true if a DataXfer.getId()==id on backgroundList
-     */
-    synchronized boolean currentXfer(int id){
-	return false;
-    }
-    void commandResponse(int id, int code, String resp){
-    }
+    
     public void run(){
+	Scanner in=new Scanner(System.in);
+	print("ftp# ");
+	while(in.hasNextLine()){
+	    try{
+		handleCommand(in.nextLine());
+	    }catch(FtpException e){
+		println(e.toString());
+	    }
+	    print("ftp# ");
+	}
     }
-    public static void main(String [] args){
+    public static void main(String [] args) throws UnknownHostException,
+						   NumberFormatException,
+						   IOException {
+	if(args.length !=3){
+	    System.out.println("usage: myftp host cport tport");
+	    System.exit(1);
+	}
+	InetAddress addr=InetAddress.getByName(args[0]);
+	int cport=Integer.parseInt(args[1]);
+	int tport=Integer.parseInt(args[2]);
+	Socket commandSocket = new Socket(addr,cport);
+	Socket termSocket=new Socket(addr,tport);
+	(new ClientMain(commandSocket,termSocket)).run();
     }
 }

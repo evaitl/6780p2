@@ -5,18 +5,18 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 
 public abstract class DataXfer implements Runnable, Closeable{
-    private int id;
+    private int cid;
     protected Socket dataSocket;
     protected boolean terminated=false;
-    protected DataXfer(int id, Socket dataSocket){
-	this.id=id;
+    protected DataXfer(int cid, Socket dataSocket){
+	this.cid=cid;
 	this.dataSocket=dataSocket;
     }
     public void terminate(){
 	terminated=true;
     }
     public int getId(){
-	return id;
+	return cid;
     }
     public void close(){
 	try{
