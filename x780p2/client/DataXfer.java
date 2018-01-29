@@ -8,7 +8,9 @@ public abstract class DataXfer implements Runnable, Closeable{
     private int cid;
     protected Socket dataSocket;
     protected boolean terminated=false;
-    protected DataXfer(int cid, Socket dataSocket){
+    protected ClientMain cm;
+    protected DataXfer(ClientMain cm, int cid, Socket dataSocket){
+	this.cm=cm;
 	this.cid=cid;
 	this.dataSocket=dataSocket;
     }

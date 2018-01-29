@@ -9,6 +9,9 @@ import java.net.InetAddress;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Scanner;
+import java.io.FileOutputStream;
+import java.io.Closeable;
+import java.io.FileInputStream;
 
 public class ClientMain implements Runnable{
     private PrintStream termPs;
@@ -33,7 +36,9 @@ public class ClientMain implements Runnable{
 	String []split=s.split(",");
 	return new Socket(split[0],Integer.parseInt(split[1]));
     }
+    
     private void doGet(String file, boolean bg){
+	FileOutputStream fos=null;
 	int commandId=CommandId.next();
 	ch.println(commandId + " RETR "+ file);
 	Response r=Responses.get(commandId);
@@ -41,14 +46,17 @@ public class ClientMain implements Runnable{
 	    println(r);
 	    return;
 	}
-	Socket s=null;
+	Socket ds=null;
 	try {
-	    s=createSocket(r.getArgs());
+	    fos=new FileOutputStream(file);
+	    ds=createSocket(r.getArgs());
 	}catch(Exception e){
+	    forceClose(fos);
+	    forceClose(ds);
 	    println(e.toString());
-	    System.exit(1);
+	    return;
 	}
-	RetrData rd=new RetrData(commandId,s);
+	RetrData rd=new RetrData(this,commandId,ds,fos);
 	if(bg){
 	    Xfers.add(rd);
 	    (new Thread(rd)).start();
@@ -58,9 +66,60 @@ public class ClientMain implements Runnable{
     }
     
     private void doList(){
+	int commandId=CommandId.next();
+	ch.println(commandId + " LIST");
+	Response r=Responses.get(commandId);
+	if(r.result()!=Response.INFO){
+	    println(r);
+	    return;
+	}
+	Socket s=null;
+	try {
+	    s=createSocket(r.getArgs());
+	}catch(Exception e){
+	    forceClose(s);
+	    println(e.toString());
+	    return;
+	}
+	ListData rd=new ListData(this,commandId,s);
+	rd.run();
+    }
+    
+    private void forceClose(Closeable c){
+	if(c==null){
+	    return;
+	}
+	try{
+	    c.close();
+	}catch(Exception e){};
     }
     
     private void doPut(String file, boolean bg){
+	FileInputStream fis=null;
+	int commandId=CommandId.next();
+	ch.println(commandId + " STOR "+ file);
+	Response r=Responses.get(commandId);
+	if(r.result()!=Response.INFO){
+	    println(r);
+	    return;
+	}
+	Socket ds=null;
+	try {
+	    fis=new FileInputStream(file);
+	    ds=createSocket(r.getArgs());
+	}catch(Exception e){
+	    println(e.toString());
+	    forceClose(fis);
+	    forceClose(ds);
+	    return;
+	}
+	StorData sd=new StorData(this,commandId,fis,ds);
+	if(bg){
+	    Xfers.add(sd);
+	    (new Thread(sd)).start();
+	}else{
+	    sd.run();
+	}
     }
     
     /*
