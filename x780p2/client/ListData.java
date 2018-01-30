@@ -22,6 +22,6 @@ class ListData extends DataXfer {
 	}catch(IOException e){}
 	close();
 	cm.println(sb.toString());
-	cm.println(Responses.get(getId()));
+	cm.println(Responses.get(getCid()));
     }
 };

@@ -4,13 +4,19 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.OutputStream;
 import java.io.InputStream;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 
 class RetrData extends DataXfer {
     OutputStream os;
     InputStream is;
-    RetrData(ClientMain cm, int id, Socket dataSocket, OutputStream os){
-	super(cm, id,dataSocket);
+    String fname;
+    RetrData(ClientMain cm, int id, Socket dataSocket,
+	     OutputStream os,int xid,
+	     String fname){
+	super(cm, id,dataSocket,xid);
 	this.os=os;
+	this.fname=fname;
     }
     public void run(){
 	int len;
@@ -22,7 +28,13 @@ class RetrData extends DataXfer {
 	    }
 	}catch(IOException e){}
 	close();
-	cm.println(Responses.get(getId()));
+	Response r=Responses.get(getCid());
+	if(r.result()==Response.ERROR){
+	    try{
+		Files.deleteIfExists(Paths.get(fname));
+	    }catch(Exception e){}
+	}
+	cm.println(r);
     }
     public void close(){
 	super.close();

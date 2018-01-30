@@ -34,7 +34,7 @@ public class ClientMain implements Runnable{
 
     private Socket createSocket(String s) throws UnknownHostException,IOException {
 	String []split=s.split(",");
-	return new Socket(split[0],Integer.parseInt(split[1]));
+	return new Socket(split[1],Integer.parseInt(split[2]));
     }
     
     private void doGet(String file, boolean bg){
@@ -46,6 +46,7 @@ public class ClientMain implements Runnable{
 	    println(r);
 	    return;
 	}
+	int xid=Integer.parseInt(r.getArgs().split(",")[0]);
 	Socket ds=null;
 	try {
 	    fos=new FileOutputStream(file);
@@ -56,7 +57,7 @@ public class ClientMain implements Runnable{
 	    println(e.toString());
 	    return;
 	}
-	RetrData rd=new RetrData(this,commandId,ds,fos);
+	RetrData rd=new RetrData(this,commandId,ds,fos,xid, file);
 	if(bg){
 	    Xfers.add(rd);
 	    (new Thread(rd)).start();
@@ -104,6 +105,7 @@ public class ClientMain implements Runnable{
 	    return;
 	}
 	Socket ds=null;
+	int xid=Integer.parseInt(r.getArgs().split(",")[0]);
 	try {
 	    fis=new FileInputStream(file);
 	    ds=createSocket(r.getArgs());
@@ -113,7 +115,7 @@ public class ClientMain implements Runnable{
 	    forceClose(ds);
 	    return;
 	}
-	StorData sd=new StorData(this,commandId,fis,ds);
+	StorData sd=new StorData(this,commandId,fis,ds,xid);
 	if(bg){
 	    Xfers.add(sd);
 	    (new Thread(sd)).start();
@@ -195,7 +197,11 @@ public class ClientMain implements Runnable{
 	    // Nothing says to wait for transfers in progress to complete.
 	    System.exit(0);
 	case "terminate":
-	    
+	    if(Xfers.hasX(Integer.parseInt(split[1]))){
+		termPs.println(split[1]);
+	    }else{
+		println("No such transfer in progress");
+	    }
 	break;
 	default:
 	    println("Unknown command: "+split[0]);

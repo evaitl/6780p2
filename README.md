@@ -27,7 +27,7 @@ responses out of order. In order to match commands and responses,
 every command will start with an integer CommandId.  The corresponding
 responses start with the same CommandId.
 
-Commands accepted on command socket are: MKD, RMD, CDUP, CWD, DELE,
+Commands accepted on command socket are: MKD, CDUP, CWD, DELE,
 PWD, LIST, RETR, STOR.
 
 Format for a command is:

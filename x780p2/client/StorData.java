@@ -8,8 +8,8 @@ import java.io.OutputStream;
 
 class StorData extends DataXfer{
     InputStream is;
-    StorData(ClientMain cm, int id, InputStream is, Socket dataSocket){
-	super(cm,id,dataSocket);
+    StorData(ClientMain cm, int id, InputStream is, Socket dataSocket,int xid){
+	super(cm,id,dataSocket,xid);
 	this.is=is;
     }
     public void run() {
@@ -22,6 +22,6 @@ class StorData extends DataXfer{
 	    }
 	}catch(IOException e){}
 	close();
-	cm.println(Responses.get(getId()));
+	cm.println(Responses.get(getCid()));
     }
 }

@@ -22,7 +22,7 @@ class Xfers{
 	Iterator<DataXfer> iter=xfers.iterator();
 	while(iter.hasNext()){
 	    DataXfer d=iter.next();
-	    if(d.getId()==cid){
+	    if(d.getCid()==cid){
 		iter.remove();
 		return d;
 	    }
@@ -32,27 +32,32 @@ class Xfers{
     
     private synchronized boolean hasXfer(int cid){
 	for(DataXfer d: xfers){
-	    if(d.getId()==cid){
+	    if(d.getCid()==cid){
 		return true;
 	    }
 	}
 	return false;
     }
-    
+
+    private synchronized boolean hasXid(int xid){
+	for(DataXfer d: xfers){
+	    if(d.getXid()==xid){
+		return true;
+	    }
+	}
+	return false;
+    }
     private synchronized void addXfer(DataXfer xfer){
 	xfers.add(xfer);
 	notifyAll();
     }
-
-    static boolean has(int cid){
-	return x.hasXfer(cid);
+    static boolean hasX(int xid){
+	return x.hasXid(xid);
     }
-    
-    static DataXfer get(int cid, boolean shouldWait){
-	return x.getXfer(cid,shouldWait);
-    }
-    
     static void add(DataXfer xfer){
 	x.addXfer(xfer);
+    }
+    static void del(int cid, boolean shouldWait){
+	x.getXfer(cid,shouldWait);
     }
 }
