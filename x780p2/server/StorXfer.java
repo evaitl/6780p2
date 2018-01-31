@@ -14,41 +14,37 @@ class StorXfer extends  DataXfer {
     private OutputStream os;
     private Path path;
     StorXfer(CommandHandler ch,
-	     ServerSocket pasvListener,
-	     int id,
+	     int cid,
 	     OutputStream os,
 	     Path path){
-	super(ch,id,pasvListener); 
+	super(ch,cid); 
 	this.os=os;
 	this.path=path;
     }
     public void run(){
+	if(!accept()){
+	    return;
+	}
 	try{
-	    accept();
 	    InputStream is=null;
 	    byte [] buffer= new byte[1000];
 	    int len;
 	    if(!terminated){
-		// We could've been terminated/closed during accept().
 		is=dataSocket.getInputStream();
 	    }
 	    while(!terminated && (len=is.read(buffer))!=-1){
 		os.write(buffer,0,len);
 	    }
+	    close();
+	    if(terminated){
+		ch.println(getCid()+" 500 STOR terminated");
+		Files.deleteIfExists(path);
+	    }else{
+		ch.println(getCid()+" 200 STOR completed");
+	    }
 	}catch(IOException e){
 	    throw new UncheckedIOException(e);
 	}	
-	close();
-	if(terminated){
-	    ch.println(getId()+" 455 STOR terminated");
-	    try{
-		Files.deleteIfExists(path);
-	    }catch(IOException e){
-		throw new UncheckedIOException(e);
-	    }
-	}else{
-	    ch.println(getId()+" 250 STOR completed");
-	}
     }
     public void close(){
 	super.close();
@@ -56,10 +52,6 @@ class StorXfer extends  DataXfer {
 	    if(os!=null){
 		os.close();
 		os=null;
-	    }
-	    if(pasvListener!=null){
-		pasvListener.close();
-		pasvListener=null;
 	    }
 	}catch(IOException e){
 	    throw new UncheckedIOException(e);

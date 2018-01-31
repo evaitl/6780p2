@@ -140,10 +140,20 @@ not in outstanding command list, just tell the user.
 
 ## Server side notes:
 
+There are multiple threads in the server, each is to have its own
+current working directory. As a process only has one current
+directory, I'm storing a simulated current directory as a path in the
+CommandHandler.
+
+Apparently paths in commands (get/put/delete/cwd/mkd) can be absolute
+or relative. If the path starts with "/", I'm assuming it to be
+absolute, else it is relative to the current working directory.
+
 There are several sockets to keep track of:
 
-* serverSocket - one per process
-* terminateSocket - one per process
+* serverSocket - one per process, accept()
+* terminateServerServer - one per process, accept()
+* terminateSocket - one per client returned 
 * commandSocket - one per client. Returned by serverSocket.accept()
 * dataServerSocket - Created, accept() once, and closed per RETR/STOR/LIST
 * dataXferSocket - used once per RETR/STOR/LIST. Returned from

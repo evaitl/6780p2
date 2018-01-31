@@ -7,9 +7,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 import java.nio.file.Files;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.UncheckedIOException;
 
 class CommandHandler implements Runnable, Closeable {
-    private Socket commandSocket;
+    Socket commandSocket;
     private PrintStream ps;
     Path cwd;
     synchronized void println(String s){
@@ -17,7 +20,11 @@ class CommandHandler implements Runnable, Closeable {
     }
     CommandHandler(Socket commandSocket){
 	this.commandSocket=commandSocket;
-	ps=new PrintStream(commandSocket.getOutputStream());
+	try{
+	    ps=new PrintStream(commandSocket.getOutputStream());
+	}catch(IOException e){
+	    throw new UncheckedIOException(e);
+	}
 	cwd=Paths.get(".").normalize().toAbsolutePath();
     }
     private void doList(Command c){
@@ -26,27 +33,30 @@ class CommandHandler implements Runnable, Closeable {
     private void doStor(Command c){
 	FileOutputStream fos=null;
 	try{
-	    fos=new FileOutputStream(cwd.resolve(c.arg).
-				     normalize().toAbsolutePath());
+	    Path p=cwd.resolve(c.arg).normalize().toAbsolutePath();;
+	    fos=new FileOutputStream(p.toFile());
+	    (new Thread(new StorXfer(this, c.cid,fos,p))).start();
 	}catch(IOException e){
 	    println(c.cid+" 500 Couldn't open target");
-	    return;
 	}
-	(new Thread(new StorXfer(this, c.cid,fos))).start();
     }
     private void doRetr(Command c){
 	FileInputStream fis;
 	try{
-	    fis=new FileInputStream(cwd.resolve(c.arg).
-				    normalize().toAbsolutePath());
+	    Path p=cwd.resolve(c.arg).normalize().toAbsolutePath();
+	    fis=new FileInputStream(p.toFile());
+	    (new Thread(new RetrXfer(this, c.cid, fis))).start();
 	}catch(IOException e){
-	    println(c.cid+" 500 Couldn't open source file");
-	    return;
+	    println(c.cid+" 500 Couldn't open file");
 	}
-	(new Thread(new ListXfer(this, c.cid, fis))).start();
     }
     public void run(){
-	Scanner sin=new Scanner(commandSocket.getInputStream());	
+	Scanner sin;
+	try{
+	    sin=new Scanner(commandSocket.getInputStream());
+	}catch(IOException e){
+	    throw new UncheckedIOException(e);
+	}
 	while(sin.hasNextLine()){
 	    Command c=new Command(sin.nextLine());
 	    switch(c.command){
@@ -66,20 +76,23 @@ class CommandHandler implements Runnable, Closeable {
 		println(c.cid +" 200 moved up");
 		break;
 	    case "cwd":
-		if(Files.isDirectory(cwd.resolve(c.arg))){
-		    cwd=cwd.resolve(c.arg).normalize().toAbsolutePath();
-		    println(c.cid+" 200 changed directory");
-		}else{
-		    println(c.cid+" 500 no can do");
+		{
+		    Path p=cwd.resolve(c.arg).normalize().toAbsolutePath();
+		    if(Files.isDirectory(p)){
+			cwd=p;
+			println(c.cid+" 200 changed directory");
+		    }else{
+			println(c.cid+" 500 not a directory");
+		    }
 		}
 		break;
 	    case "dele":
 		{
 		    Path p = cwd.resolve(c.arg).normalize().toAbsolutePath();
 		    if (!Files.exists(p)){
-			println(c.cid+ " 500 file "+c.arg+" doesn't exist?");
+			println(c.cid+ " 500 file "+p+" doesn't exist?");
 		    }else if(Files.isDirectory(p)) {
-			println(c.cid+ " 500 "+c.arg+" is a directory");
+			println(c.cid+ " 500 "+p+" is a directory");
 		    }else{
 			try{
 			    Files.delete(p);

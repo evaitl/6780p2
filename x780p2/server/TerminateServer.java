@@ -3,16 +3,21 @@ import java.util.Scanner;
 import java.net.Socket;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-
+import java.net.ServerSocket;
 class TerminateServer implements Runnable{
     private ServerSocket tssock;
     TerminateServer(ServerSocket tssock){
-	this.tssock
+	this.tssock=tssock;
     }
     public void run(){
-	while(true){
-	    Socket tsock=tssock.accept();
-	    (new Thread(new TerminateHandler(tsock))).start();
+	try{
+	    
+	    while(true){
+		Socket tsock=tssock.accept();
+		(new Thread(new TerminateHandler(tsock))).start();
+	    }
+	}catch(IOException e){
+	    throw new UncheckedIOException(e);
 	}
     }
 }

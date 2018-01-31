@@ -6,45 +6,70 @@ import java.io.UncheckedIOException;
 import java.net.ServerSocket;
 
 public abstract class DataXfer implements Runnable, Closeable{
-    private int id;
-    private ServerSocket pasvListener;
-    protected Socket dataSocket;
+    private int cid;
+    private int xid;
     protected CommandHandler ch;
     protected boolean terminated=false;
-    protected DataXfer(CommandHandler ch, int id, ServerSocket pasvListener){
+
+    protected ServerSocket pasvListener;
+    protected Socket dataSocket;
+    
+    protected DataXfer(CommandHandler ch, int cid){
 	this.ch=ch;
-	this.id=id;
-	this.pasvListener=pasvListener;
+	this.cid=cid;
+	xid=XferId.next();
+	try{
+	    pasvListener=new ServerSocket(0);
+	}catch(IOException e){
+	    throw new UncheckedIOException(e);
+	}
+	StringBuilder sb=new StringBuilder();
+	sb.append(cid).append(" 100 ").append(xid)
+	    .append(',').append(ch.commandSocket.getLocalAddress().toString())
+	    .append(',').append(pasvListener.getLocalPort());
+	ch.println(sb.toString());
     }
 
-    protected void accept(){
+    synchronized void closePassive(){
+	try{
+	    if(pasvListener!=null){
+		pasvListener.close();
+		pasvListener=null;
+	    }
+	}catch(IOException e){
+	    // Do I care?
+	}
+    }
+
+    protected boolean accept(){
 	try {
 	    dataSocket=pasvListener.accept();
-	    pasvListener.close();
-	    pasvListener=null;
+	    closePassive();
 	}catch(IOException e){
-	    // Ignore. Possibly terminated/closed while accepting.
+	    close();
+	    return false;
 	}
+	return !terminated;
     }
     
     public void terminate(){
 	terminated=true;
+	closePassive();
     }
     
-    public int getId(){
-	return id;
+    public int getXid(){
+	return xid;
     }
-    
+    public int getCid(){
+	return xid;
+    }
     public void close(){
 	try{
 	    if(dataSocket!=null){
 		dataSocket.close();
 		dataSocket=null;
 	    }
-	    if(pasvListener!=null){
-		pasvListener.close();
-		pasvListener=null;
-	    }
+	    closePassive();
 	}catch(IOException e){
 	    // Ignore close exceptions.
 	}

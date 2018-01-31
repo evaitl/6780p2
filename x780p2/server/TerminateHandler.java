@@ -3,6 +3,7 @@ import java.util.Scanner;
 import java.net.Socket;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.io.Closeable;
 
 class TerminateHandler implements Runnable, Closeable{
     Scanner sin;
@@ -27,9 +28,6 @@ class TerminateHandler implements Runnable, Closeable{
 	}
     }
     public void close(){
-	try{
-	    sin.close();
-	}catch(IOException e){
-	}
+	sin.close();
     }
 }
