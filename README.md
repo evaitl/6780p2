@@ -228,7 +228,13 @@ Sequence Diagrams:
 
 A couple of sequence diagrams to clarify operation and protocol:
 
+This picture simplifies things a bit. There are actually a
+commandServerSocket and terminateServerSocket that are accept()ing.
+The result of the 3-way accept handshake from one of these is the
+connection between the client and server data and terminate sockets.
+
 ![Terminated RETR](docs/retr_term.png)
+
 
 
 Questions:
