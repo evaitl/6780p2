@@ -64,7 +64,7 @@ public abstract class DataXfer implements Runnable, Closeable{
 	return xid;
     }
     public int getCid(){
-	return xid;
+	return cid;
     }
     public void close(){
 	try{

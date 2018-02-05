@@ -159,6 +159,7 @@ public class ClientMain implements Runnable{
 	    if(split.length <2){
 		println("Delete what?");
 	    }else{
+		out.println("delete: "+split[1]);
 		commandId=CommandId.next();
 		ch.println(commandId + " DELE " + split[1]);
 		println(Responses.get(commandId));
@@ -198,6 +199,7 @@ public class ClientMain implements Runnable{
 	case "quit":
 	    // Nothing says to wait for transfers in progress to complete.
 	    System.exit(0);
+	    break;
 	case "terminate":
 	    if(Xfers.hasX(Integer.parseInt(split[1]))){
 		termPs.println(split[1]);
