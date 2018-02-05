@@ -7,19 +7,24 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.net.InetAddress;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.PrintStream;
 import java.util.Scanner;
 import java.io.FileOutputStream;
 import java.io.Closeable;
 import java.io.FileInputStream;
 
+import static java.lang.System.out;
 public class ClientMain implements Runnable{
     private PrintStream termPs;
     private CommandHandler ch;
 
-    ClientMain(Socket termSocket, Socket commandSocket) throws IOException {
+    ClientMain(Socket commandSocket, Socket termSocket) throws IOException {
+	out.println("New CM: cs " + commandSocket+" ts " +termSocket);
+	termSocket.shutdownInput();
 	termPs=new PrintStream(termSocket.getOutputStream());
 	ch=new CommandHandler(commandSocket);
+	(new Thread(ch)).start();
     }
 
     synchronized void println(Response r){
@@ -34,6 +39,7 @@ public class ClientMain implements Runnable{
 
     private Socket createSocket(String s) throws UnknownHostException,IOException {
 	String []split=s.split(",");
+	for(String a: split) out.println(a);
 	return new Socket(split[1],Integer.parseInt(split[2]));
     }
     
@@ -69,18 +75,14 @@ public class ClientMain implements Runnable{
     private void doList(){
 	int commandId=CommandId.next();
 	ch.println(commandId + " LIST");
+	out.println("dolist commandId "+commandId);
 	Response r=Responses.get(commandId);
-	if(r.result()!=Response.INFO){
-	    println(r);
-	    return;
-	}
+	out.println("cm response: "+r);
 	Socket s=null;
 	try {
 	    s=createSocket(r.getArgs());
-	}catch(Exception e){
-	    forceClose(s);
-	    println(e.toString());
-	    return;
+	}catch(IOException e){
+	    throw new UncheckedIOException(e);
 	}
 	ListData rd=new ListData(this,commandId,s);
 	rd.run();

@@ -10,15 +10,17 @@ import java.nio.file.Files;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.UncheckedIOException;
-
+import static java.lang.System.out;
 class CommandHandler implements Runnable, Closeable {
     Socket commandSocket;
     private PrintStream ps;
     Path cwd;
     synchronized void println(String s){
+	out.println("ch sending: "+s);
 	ps.println(s);
     }
     CommandHandler(Socket commandSocket){
+	out.println("CH: "+commandSocket);
 	this.commandSocket=commandSocket;
 	try{
 	    ps=new PrintStream(commandSocket.getOutputStream());
@@ -28,6 +30,7 @@ class CommandHandler implements Runnable, Closeable {
 	cwd=Paths.get(".").normalize().toAbsolutePath();
     }
     private void doList(Command c){
+	out.println("doList "+c);
 	(new Thread(new ListXfer(this, c.cid, cwd))).start();
     }
     private void doStor(Command c){
@@ -59,6 +62,7 @@ class CommandHandler implements Runnable, Closeable {
 	}
 	while(sin.hasNextLine()){
 	    Command c=new Command(sin.nextLine());
+	    out.println("CH run: "+c);
 	    switch(c.command){
 	    case "mkd":
 		{

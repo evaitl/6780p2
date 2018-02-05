@@ -21,7 +21,7 @@ class RetrXfer extends DataXfer{
 	    return;
 	}
 	try{
-	    OutputStream os=null;
+	    OutputStream os=dataSocket.getOutputStream();
 	    byte [] buffer= new byte[1000];
 	    int len;
 	    while(!terminated && (len=is.read(buffer))!=-1){
@@ -29,9 +29,9 @@ class RetrXfer extends DataXfer{
 	    }
 	    close();
 	    if(terminated){
-		ch.println(getCid()+" 500 STOR terminated");
+		ch.println(getCid()+" 500 RETR terminated");
 	    }else{
-		ch.println(getCid()+" 200 STOR completed");
+		ch.println(getCid()+" 200 RETR completed");
 	    }
 	}catch(IOException e){
 	    throw new UncheckedIOException(e);

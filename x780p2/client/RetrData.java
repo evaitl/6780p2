@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.nio.file.Files;
-
+import static java.lang.System.out;
 class RetrData extends DataXfer {
     OutputStream os;
     InputStream is;
@@ -32,7 +32,10 @@ class RetrData extends DataXfer {
 	if(r.result()==Response.ERROR){
 	    try{
 		Files.deleteIfExists(Paths.get(fname));
-	    }catch(Exception e){}
+	    }catch(IOException e){
+		out.println("Error deleting "+fname);
+		out.println(e.toString());
+	    }
 	}
 	cm.println(r);
     }

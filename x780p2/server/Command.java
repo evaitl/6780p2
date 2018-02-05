@@ -12,4 +12,7 @@ class Command{
 	    arg=split[2];
 	}
     }
+    public String toString(){
+	return String.format("Command: [%s %d %s]",command,cid,arg);
+    }
 }

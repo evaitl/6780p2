@@ -9,7 +9,10 @@ class ServerMain {
 	// https://docs.oracle.com/javase/7/docs/api/java/net/doc-files/net-properties.html
 	System.setProperty("java.net.preferIPv4Stack","true");
 	System.setProperty("java.net.preferIPv4Addresses","true");
-	
+	if(args.length!=2){
+	    System.out.println("usage: myftpserver sport tport");
+	    System.exit(1);
+	}
 	int sport=Integer.parseUnsignedInt(args[0]);
 	int tport=Integer.parseUnsignedInt(args[1]);
 
@@ -19,7 +22,7 @@ class ServerMain {
 	    // (https://hea-www.harvard.edu/~fine/Tech/addrinuse.html)	
 	    mainSocket.setReuseAddress(true);
 	    ServerSocket termSocket=new ServerSocket(tport);
-	    termSocket.setReuseAddress(true);	
+	    termSocket.setReuseAddress(true);
 	    (new Thread(new TerminateServer(termSocket))).start();
 	    
 	    while(true){

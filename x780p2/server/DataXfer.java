@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.ServerSocket;
 
+import static java.lang.System.out;
+
 public abstract class DataXfer implements Runnable, Closeable{
-    private int cid;
-    private int xid;
+    protected int cid;
+    protected int xid;
     protected CommandHandler ch;
     protected boolean terminated=false;
 
@@ -15,6 +17,7 @@ public abstract class DataXfer implements Runnable, Closeable{
     protected Socket dataSocket;
     
     protected DataXfer(CommandHandler ch, int cid){
+	out.println("C DataXfer " + cid);
 	this.ch=ch;
 	this.cid=cid;
 	xid=XferId.next();
@@ -25,7 +28,7 @@ public abstract class DataXfer implements Runnable, Closeable{
 	}
 	StringBuilder sb=new StringBuilder();
 	sb.append(cid).append(" 100 ").append(xid)
-	    .append(',').append(ch.commandSocket.getLocalAddress().toString())
+	    .append(',').append(ch.commandSocket.getLocalAddress().getHostAddress())
 	    .append(',').append(pasvListener.getLocalPort());
 	ch.println(sb.toString());
     }

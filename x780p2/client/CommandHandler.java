@@ -7,16 +7,18 @@ import java.io.UncheckedIOException;
 import java.util.Scanner;
 import java.io.PrintStream;
 
+import static java.lang.System.out;
 class CommandHandler implements Runnable, Closeable {
     private Socket commandSocket;
     private PrintStream os;
+    
     CommandHandler(Socket commandSocket){
 	this.commandSocket=commandSocket;
+	out.println("ch created: "+commandSocket);
 	try{
 	    os=new PrintStream(commandSocket.getOutputStream());
-	}catch(Exception e){
-	    System.out.println(e.toString());
-	    System.exit(1);
+	}catch(IOException e){
+	    throw new UncheckedIOException(e);
 	}
 
     }
@@ -26,21 +28,23 @@ class CommandHandler implements Runnable, Closeable {
     }
     
     public void run(){
+	out.println("ch run");
 	try{
 	    Scanner in=new Scanner(commandSocket.getInputStream());
 	    while(in.hasNextLine()){
+		out.println("ch next line");
 		Responses.add(in.nextLine());
 	    }
 	}catch(IOException e){
-	    System.out.println(e.toString());
-	    return;
+	    throw new UncheckedIOException(e);
 	}
-
     }
     public void close(){
 	try{
 	    commandSocket.close();
 	}catch(IOException e){
+	    // don't catch close errors.
+	    out.println("close error: "+e);
 	}
     }    
 }

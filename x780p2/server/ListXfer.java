@@ -10,11 +10,14 @@ import java.nio.file.Files;
 import java.nio.file.DirectoryStream;
 import java.io.IOException;
 
+import static java.lang.System.out;
+
 class ListXfer extends DataXfer{
     Path cwd;
     ListXfer(CommandHandler ch, int cid, Path cwd){
 	super(ch,cid);
-	
+	this.cwd=cwd;
+	out.println("listXfer: "+cid+" "+cwd);
     }
 
     /**
@@ -90,9 +93,11 @@ class ListXfer extends DataXfer{
     }
     
     public void run(){
+	out.println("lx run");
 	if(!accept()){
 	    return;
 	}
+	out.println("lx accepted");
 	try(DirectoryStream<Path> d = Files.newDirectoryStream(cwd)){
 	    StringBuilder sb=new StringBuilder();
 	    for(Path p: d){
@@ -102,8 +107,8 @@ class ListXfer extends DataXfer{
 	    close();
 	}catch(IOException e){
 	    close();
-	    ch.println("500 something went worng");
+	    ch.println(cid+" 500 something went worng");
 	}
-	ch.println("200 All good");
+	ch.println(cid+" 200 All good");
     }
 }

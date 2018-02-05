@@ -14,6 +14,7 @@ class TerminateServer implements Runnable{
 	    
 	    while(true){
 		Socket tsock=tssock.accept();
+		tsock.shutdownOutput();
 		(new Thread(new TerminateHandler(tsock))).start();
 	    }
 	}catch(IOException e){

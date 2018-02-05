@@ -19,7 +19,9 @@ class ListData extends DataXfer {
 	    while((len=is.read(buffer))!=-1){
 		sb.append(new String(buffer,0,len));
 	    }
-	}catch(IOException e){}
+	}catch(IOException e){
+	    throw new UncheckedIOException(e);
+	}
 	close();
 	cm.println(sb.toString());
 	cm.println(Responses.get(getCid()));

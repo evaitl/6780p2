@@ -3,7 +3,7 @@ import java.io.Closeable;
 import java.net.Socket;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-
+import static java.lang.System.out;
 public abstract class DataXfer implements Runnable, Closeable{
     private int cid;
     private int xid;
@@ -13,6 +13,7 @@ public abstract class DataXfer implements Runnable, Closeable{
 	this(cm, cid, dataSocket,0);
     }
     protected DataXfer(ClientMain cm, int cid, Socket dataSocket,int xid){
+	out.printf("dx: cid %d xid %d  ds %s",cid,xid,dataSocket.toString());
 	this.cm=cm;
 	this.cid=cid;
 	this.dataSocket=dataSocket;
