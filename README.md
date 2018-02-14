@@ -237,6 +237,38 @@ connection between the client and server data and terminate sockets.
 
 
 
+File Synchronization
+====================
+
+The correct way to synchronize reads and writes of files on a Linux
+box is probably to do writes to temp files created with `mkstemp(3)`
+and then `rename(2)` when the complete file is written. Reads and
+writes could happen as they come in with no stepping on each other and
+the files read would always be complete files because once a reader
+opens a file and gets an fd, replacing the file with a rename() won't
+change the data the fd is attached to.
+
+However, I gather though from class discussions that we are supposed
+to do file synchronization the hard way, by solving the
+readers/writers problem. Note that this way will also leave partial
+files in place if a put is terminated before completion.  
+
+So... We create a PathReadWrite class, that allows clients to request
+to read/write files by Path.  Multiple readers are allowed for each
+Path, but a writer has exclusive access. Once a requester is granted
+access, its run() method is kicked off. The requester needs to notify
+PathReadWrite when it is done with reading/writing Path.
+
+PathReadWrite creates a static Object as a mutex. This object is just
+used for the synchronized statements that protect the multi-thread
+integrity of a HashMap.  We could have just synchronized on the hash
+map, or used non-static synchronized methods, but I figured that this
+design was closest to the spirit of doing the same program in C/C++
+with a pthread_mutex_t.
+
+This is broken by design, un-necessarily complicated, and not what I
+would do in a commercial program.
+
 Questions:
 ==========
 

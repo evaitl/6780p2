@@ -38,6 +38,8 @@ class CommandHandler implements Runnable, Closeable {
 	}catch(IOException e){
 	    throw new UncheckedIOException(e);
 	}
+	out.println("Command socket closed. Exiting.");
+	System.exit(1);
     }
     public void close(){
 	try{

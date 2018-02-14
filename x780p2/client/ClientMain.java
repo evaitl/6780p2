@@ -37,7 +37,8 @@ public class ClientMain implements Runnable{
 	System.out.print(s);
     }
 
-    private Socket createSocket(String s) throws UnknownHostException,IOException {
+    private Socket createSocket(String s) throws UnknownHostException,
+						 IOException {
 	String []split=s.split(",");
 	for(String a: split) out.println(a);
 	return new Socket(split[1],Integer.parseInt(split[2]));
