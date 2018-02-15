@@ -8,21 +8,25 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.nio.file.Files;
-
+import java.io.FileOutputStream;
 class StorXfer extends  DataXfer {
-    private ServerSocket pasvListener;
-    private OutputStream os;
-    private Path path;
+    private OutputStream os=null;
+    private boolean closed =false;
     StorXfer(CommandHandler ch,
 	     int cid,
-	     OutputStream os,
 	     Path path){
-	super(ch,cid); 
-	this.os=os;
-	this.path=path;
+	super(ch,cid,path);
+	PathReadWrite.write(path,this);
     }
     public void run(){
 	if(!accept()){
+	    return;
+	}
+	try{
+	    os=new FileOutputStream(path.toFile());
+	}catch(IOException e){
+	    ch.println(getCid()+" 500 STOR can't open file "+path);
+	    close();
 	    return;
 	}
 	try{
@@ -35,19 +39,31 @@ class StorXfer extends  DataXfer {
 	    while(!terminated && (len=is.read(buffer))!=-1){
 		os.write(buffer,0,len);
 	    }
-	    close();
-	    if(terminated){
-		ch.println(getCid()+" 500 STOR terminated");
-		Files.deleteIfExists(path);
-	    }else{
-		ch.println(getCid()+" 200 STOR completed");
-	    }
 	}catch(IOException e){
-	    throw new UncheckedIOException(e);
-	}	
+	    if(!terminated){
+		throw new UncheckedIOException(e);
+	    }
+	}finally{
+	    close();
+	}
+	if(terminated){
+	    ch.println(getCid()+" 500 STOR "+getXid()+" terminated");
+	    try{
+		Files.deleteIfExists(path);
+	    }catch(IOException e){
+		throw new UncheckedIOException(e);
+	    }
+	}else{
+	    ch.println(getCid()+" 200 STOR completed");
+	}
     }
     public void close(){
+	if(closed){
+	    return;
+	}
+	closed=true;
 	super.close();
+	PathReadWrite.writeDone(path);
 	try{
 	    if(os!=null){
 		os.close();

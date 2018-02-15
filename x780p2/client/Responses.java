@@ -9,7 +9,6 @@ class Responses{
     private static Responses sr=new Responses();
     
     private Responses(){
-	out.println("Creating responses");
 	responseList=new LinkedList<>();
     }
     
@@ -46,13 +45,10 @@ class Responses{
     }
     
     static void add(String s){
-	out.println("add response "+s);
 	sr.addResponse(s);
-	out.println("add done");
     }
     
     static Response get(int cid){
-	out.println("get response "+cid);
 	return sr.getResponse(cid);
     }
 }

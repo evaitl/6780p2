@@ -23,7 +23,7 @@ class ListData extends DataXfer {
 	    throw new UncheckedIOException(e);
 	}
 	close();
-	cm.println(sb.toString());
+	cm.print(sb.toString());
 	cm.println(Responses.get(getCid()));
     }
 };

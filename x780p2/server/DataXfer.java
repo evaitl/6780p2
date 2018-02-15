@@ -4,23 +4,24 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.ServerSocket;
-
-import static java.lang.System.out;
+import java.nio.file.Path;
 
 public abstract class DataXfer implements Runnable, Closeable{
     protected int cid;
     protected int xid;
+    protected Path path;
     protected CommandHandler ch;
     protected boolean terminated=false;
 
     protected ServerSocket pasvListener;
     protected Socket dataSocket;
     
-    protected DataXfer(CommandHandler ch, int cid){
-	out.println("C DataXfer " + cid);
+    protected DataXfer(CommandHandler ch, int cid, Path path){
 	this.ch=ch;
 	this.cid=cid;
+	this.path=path;
 	xid=XferId.next();
+	Xfers.register(this);
 	try{
 	    pasvListener=new ServerSocket(0);
 	}catch(IOException e){
@@ -50,6 +51,8 @@ public abstract class DataXfer implements Runnable, Closeable{
 	    closePassive();
 	}catch(IOException e){
 	    close();
+	    // Probably terminate(), which closed socket. 
+	    ch.println(getCid() + " 500 accept failure");
 	    return false;
 	}
 	return !terminated;
@@ -57,7 +60,10 @@ public abstract class DataXfer implements Runnable, Closeable{
     
     public void terminate(){
 	terminated=true;
-	closePassive();
+	// Network writes block when the buffers are full. Whack the
+	// loop with a hammer by closing the network socket in addition
+	// to setting the terminate flag. 
+	close();
     }
     
     public int getXid(){
@@ -67,6 +73,7 @@ public abstract class DataXfer implements Runnable, Closeable{
 	return cid;
     }
     public void close(){
+	Xfers.done(this);
 	try{
 	    if(dataSocket!=null){
 		dataSocket.close();
@@ -76,5 +83,12 @@ public abstract class DataXfer implements Runnable, Closeable{
 	}catch(IOException e){
 	    // Ignore close exceptions.
 	}
+    }
+    @Override
+    public boolean equals(Object o){
+	if(this==o){
+	    return true;
+	}
+	return false;
     }
 }

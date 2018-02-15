@@ -14,7 +14,6 @@ class CommandHandler implements Runnable, Closeable {
     
     CommandHandler(Socket commandSocket){
 	this.commandSocket=commandSocket;
-	out.println("ch created: "+commandSocket);
 	try{
 	    os=new PrintStream(commandSocket.getOutputStream());
 	}catch(IOException e){
@@ -28,11 +27,9 @@ class CommandHandler implements Runnable, Closeable {
     }
     
     public void run(){
-	out.println("ch run");
 	try{
 	    Scanner in=new Scanner(commandSocket.getInputStream());
 	    while(in.hasNextLine()){
-		out.println("ch next line");
 		Responses.add(in.nextLine());
 	    }
 	}catch(IOException e){

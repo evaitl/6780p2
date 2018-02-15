@@ -10,17 +10,14 @@ import java.nio.file.Files;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.UncheckedIOException;
-import static java.lang.System.out;
 class CommandHandler implements Runnable, Closeable {
     Socket commandSocket;
     private PrintStream ps;
     Path cwd;
     synchronized void println(String s){
-	out.println("ch sending: "+s);
 	ps.println(s);
     }
     CommandHandler(Socket commandSocket){
-	out.println("CH: "+commandSocket);
 	this.commandSocket=commandSocket;
 	try{
 	    ps=new PrintStream(commandSocket.getOutputStream());
@@ -30,28 +27,15 @@ class CommandHandler implements Runnable, Closeable {
 	cwd=Paths.get(".").normalize().toAbsolutePath();
     }
     private void doList(Command c){
-	out.println("doList "+c);
 	(new Thread(new ListXfer(this, c.cid, cwd))).start();
     }
     private void doStor(Command c){
-	FileOutputStream fos=null;
-	try{
-	    Path p=cwd.resolve(c.arg).normalize().toAbsolutePath();;
-	    fos=new FileOutputStream(p.toFile());
-	    (new Thread(new StorXfer(this, c.cid,fos,p))).start();
-	}catch(IOException e){
-	    println(c.cid+" 500 Couldn't open target");
-	}
+	Path p=cwd.resolve(c.arg).normalize().toAbsolutePath();;
+	new StorXfer(this,c.cid,p);
     }
     private void doRetr(Command c){
-	FileInputStream fis;
-	try{
-	    Path p=cwd.resolve(c.arg).normalize().toAbsolutePath();
-	    fis=new FileInputStream(p.toFile());
-	    (new Thread(new RetrXfer(this, c.cid, fis))).start();
-	}catch(IOException e){
-	    println(c.cid+" 500 Couldn't open file");
-	}
+	Path p=cwd.resolve(c.arg).normalize().toAbsolutePath();
+	new RetrXfer(this,c.cid,p);
     }
     public void run(){
 	Scanner sin;
@@ -62,7 +46,6 @@ class CommandHandler implements Runnable, Closeable {
 	}
 	while(sin.hasNextLine()){
 	    Command c=new Command(sin.nextLine());
-	    out.println("CH run: "+c);
 	    switch(c.command){
 	    case "mkd":
 		{

@@ -20,7 +20,6 @@ public class ClientMain implements Runnable{
     private CommandHandler ch;
 
     ClientMain(Socket commandSocket, Socket termSocket) throws IOException {
-	out.println("New CM: cs " + commandSocket+" ts " +termSocket);
 	termSocket.shutdownInput();
 	termPs=new PrintStream(termSocket.getOutputStream());
 	ch=new CommandHandler(commandSocket);
@@ -40,7 +39,7 @@ public class ClientMain implements Runnable{
     private Socket createSocket(String s) throws UnknownHostException,
 						 IOException {
 	String []split=s.split(",");
-	for(String a: split) out.println(a);
+	//	for(String a: split) out.println(a);
 	return new Socket(split[1],Integer.parseInt(split[2]));
     }
     
@@ -67,6 +66,7 @@ public class ClientMain implements Runnable{
 	RetrData rd=new RetrData(this,commandId,ds,fos,xid, file);
 	if(bg){
 	    Xfers.add(rd);
+	    println("Terminate ID: "+xid);
 	    (new Thread(rd)).start();
 	}else{
 	    rd.run();
@@ -76,9 +76,7 @@ public class ClientMain implements Runnable{
     private void doList(){
 	int commandId=CommandId.next();
 	ch.println(commandId + " LIST");
-	out.println("dolist commandId "+commandId);
 	Response r=Responses.get(commandId);
-	out.println("cm response: "+r);
 	Socket s=null;
 	try {
 	    s=createSocket(r.getArgs());
@@ -121,6 +119,7 @@ public class ClientMain implements Runnable{
 	StorData sd=new StorData(this,commandId,fis,ds,xid);
 	if(bg){
 	    Xfers.add(sd);
+	    println("Terminate ID: "+xid);	    
 	    (new Thread(sd)).start();
 	}else{
 	    sd.run();
@@ -160,7 +159,6 @@ public class ClientMain implements Runnable{
 	    if(split.length <2){
 		println("Delete what?");
 	    }else{
-		out.println("delete: "+split[1]);
 		commandId=CommandId.next();
 		ch.println(commandId + " DELE " + split[1]);
 		println(Responses.get(commandId));
@@ -202,6 +200,7 @@ public class ClientMain implements Runnable{
 	    System.exit(0);
 	    break;
 	case "terminate":
+	    println("terminating");
 	    if(Xfers.hasX(Integer.parseInt(split[1]))){
 		termPs.println(split[1]);
 	    }else{

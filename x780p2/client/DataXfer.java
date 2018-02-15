@@ -13,7 +13,7 @@ public abstract class DataXfer implements Runnable, Closeable{
 	this(cm, cid, dataSocket,0);
     }
     protected DataXfer(ClientMain cm, int cid, Socket dataSocket,int xid){
-	out.printf("dx: cid %d xid %d  ds %s\n",cid,xid,dataSocket.toString());
+	//	out.printf("dx: cid %d xid %d  ds %s\n",cid,xid,dataSocket.toString());
 	this.cm=cm;
 	this.cid=cid;
 	this.dataSocket=dataSocket;

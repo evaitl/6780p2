@@ -15,16 +15,9 @@ class TerminateHandler implements Runnable, Closeable{
 	}
     }
     public void run(){
-	try{
 	while(sin.hasNextLine()){
 	    String line=sin.nextLine();
-	    DataXfer dx=Xfers.getxid(Integer.parseInt(line.trim()));
-	    if(dx!=null){
-		dx.terminate();
-	    }
-	}
-	}catch(Exception e){
-	    //
+	    Xfers.terminate(Integer.parseInt(line.trim()));
 	}
     }
     public void close(){
