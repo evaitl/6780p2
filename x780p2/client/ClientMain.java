@@ -66,7 +66,6 @@ public class ClientMain implements Runnable {
         }
         RetrData rd = new RetrData(this, commandId, ds, fos, xid, file);
         if (bg) {
-            Xfers.add(rd);
             println("Terminate ID: " + xid);
             (new Thread(rd)).start();
         }else{
@@ -121,7 +120,6 @@ public class ClientMain implements Runnable {
         }
         StorData sd = new StorData(this, commandId, fis, ds, xid);
         if (bg) {
-            Xfers.add(sd);
             println("Terminate ID: " + xid);
             (new Thread(sd)).start();
         }else{
