@@ -1,13 +1,13 @@
 package x780p2.client;
-class CommandId{
-    private int nextInt=1;
-    private static CommandId cid=new CommandId();
+class CommandId {
+    private int nextInt = 1;
+    private static CommandId cid = new CommandId();
     private CommandId(){
     }
     private synchronized int nextId(){
-	return nextInt++;
+        return nextInt++;
     }
     static int next(){
-	return cid.nextId();
+        return cid.nextId();
     }
 }

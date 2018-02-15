@@ -11,9 +11,9 @@ import java.nio.file.DirectoryStream;
 import java.io.IOException;
 
 
-class ListXfer extends DataXfer{
-    ListXfer(CommandHandler ch, int cid,Path path){
-	super(ch,cid,path);
+class ListXfer extends DataXfer {
+    ListXfer(CommandHandler ch, int cid, Path path){
+        super(ch, cid, path);
     }
 
     /**
@@ -87,22 +87,22 @@ class ListXfer extends DataXfer{
         sb.append('\n');
         return sb.toString();
     }
-    
+
     public void run(){
-	if(!accept()){
-	    return;
-	}
-	try(DirectoryStream<Path> d = Files.newDirectoryStream(path)){
-	    StringBuilder sb=new StringBuilder();
-	    for(Path p: d){
-		sb.append(ls(p));
-	    }
-	    dataSocket.getOutputStream().write(sb.toString().getBytes());
-	}catch(IOException e){
-	    ch.println(cid+" 500 something went worng");
-	}finally{
-	    close();
-	}
-	ch.println(cid+" 200 All good");
+        if (!accept()) {
+            return;
+        }
+        try (DirectoryStream<Path> d = Files.newDirectoryStream(path)) {
+            StringBuilder sb = new StringBuilder();
+            for (Path p: d) {
+                sb.append(ls(p));
+            }
+            dataSocket.getOutputStream().write(sb.toString().getBytes());
+        }catch (IOException e) {
+            ch.println(cid + " 500 something went worng");
+        }finally{
+            close();
+        }
+        ch.println(cid + " 200 All good");
     }
 }

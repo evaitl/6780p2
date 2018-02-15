@@ -11,39 +11,39 @@ import static java.lang.System.out;
 class CommandHandler implements Runnable, Closeable {
     private Socket commandSocket;
     private PrintStream os;
-    
+
     CommandHandler(Socket commandSocket){
-	this.commandSocket=commandSocket;
-	try{
-	    os=new PrintStream(commandSocket.getOutputStream());
-	}catch(IOException e){
-	    throw new UncheckedIOException(e);
-	}
+        this.commandSocket = commandSocket;
+        try{
+            os = new PrintStream(commandSocket.getOutputStream());
+        }catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
 
     }
-    
+
     synchronized void println(String s){
-	os.println(s);
+        os.println(s);
     }
-    
+
     public void run(){
-	try{
-	    Scanner in=new Scanner(commandSocket.getInputStream());
-	    while(in.hasNextLine()){
-		Responses.add(in.nextLine());
-	    }
-	}catch(IOException e){
-	    throw new UncheckedIOException(e);
-	}
-	out.println("Command socket closed. Exiting.");
-	System.exit(1);
+        try{
+            Scanner in = new Scanner(commandSocket.getInputStream());
+            while (in.hasNextLine()) {
+                Responses.add(in.nextLine());
+            }
+        }catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        out.println("Command socket closed. Exiting.");
+        System.exit(1);
     }
     public void close(){
-	try{
-	    commandSocket.close();
-	}catch(IOException e){
-	    // don't catch close errors.
-	    out.println("close error: "+e);
-	}
-    }    
+        try{
+            commandSocket.close();
+        }catch (IOException e) {
+            // don't catch close errors.
+            out.println("close error: " + e);
+        }
+    }
 }
