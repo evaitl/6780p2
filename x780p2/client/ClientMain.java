@@ -230,7 +230,7 @@ public class ClientMain implements Runnable {
     NumberFormatException,
     IOException {
         if (args.length != 3) {
-            System.out.println("usage: myftp host cport tport");
+            System.out.println("usage: myftp host sport tport");
             System.exit(1);
         }
         InetAddress addr = InetAddress.getByName(args[0]);

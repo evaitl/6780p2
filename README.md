@@ -9,6 +9,22 @@ While this file is human readable, it is best to view it as a
 processed markdown file on the github site
 [here](https://github.com/evaitl/6780p2).
 
+Build/Run
+=========
+
+
+Copy the tree here to the client and server machines. On both machines
+type `make`.  Start the server before using a client. 
+
+
+On the server type
+
+    ./myftpserver <sport> <tport> 
+
+On the client type:
+
+    ./myftp host <sport> <tport>
+
 
 Design Notes
 ============

@@ -10,6 +10,9 @@ import java.nio.file.Files;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.UncheckedIOException;
+
+//import static java.lang.System.out;
+
 class CommandHandler implements Runnable, Closeable {
     Socket commandSocket;
     private PrintStream ps;
@@ -41,7 +44,7 @@ class CommandHandler implements Runnable, Closeable {
     }
     public void run(){
         Scanner sin;
-
+	//	out.println("ch started");
         try{
             sin = new Scanner(commandSocket.getInputStream());
         }catch (IOException e) {
@@ -49,6 +52,7 @@ class CommandHandler implements Runnable, Closeable {
         }
         while (sin.hasNextLine()) {
             Command c = new Command(sin.nextLine());
+	    //	    out.println("ch command: "+c);
             switch (c.command) {
             case "mkd":
             {
